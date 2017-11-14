@@ -1,0 +1,81 @@
+---
+- hosts: localhost
+  remote_user: root
+  tasks:
+    - package: 
+         name: python2-dnf
+         state: present
+
+    - package: 
+         name: libselinux-python
+         state: present
+
+    - name: install vim
+      package:
+         name: vim 
+         state: latest 
+    - name: install terminator
+      package: 
+         name: terminator
+         state: latest
+
+    - group:
+        name: $group
+        state: present
+    
+    - lineinfile:
+        path: /etc/selinux/config
+        regexp: '^SELINUX='
+        line: 'SELINUX=enforcing'
+
+    - lineinfile:
+        path: /etc/sudoers
+        state: absent
+        regexp: '^%wheel'
+
+    - lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%$group'
+        line: '%$group ALL=(ALL) ALL'
+
+    - user:
+        name: $user
+        groups: $group
+        append: yes
+        state: present
+        createhome: yes
+
+    - package:
+        name: thunderbird
+        state: absent
+
+    - package:
+        name: pidgin-sipe
+        state: present
+
+    - package:
+        name: pidgin
+        state: present
+
+    - package:
+        name: evolution
+        state: present
+
+    - yum_repository:
+         name: google-chrome
+         description: google-chrome
+         baseurl: http://dl.google.com/linux/chrome/rpm/stable/x86_64
+         enabled: 1
+         gpgkey: https://dl-ssl.google.com/linux/linux_signing_key.pub
+         gpgcheck: 1
+         
+    - package:
+        name: google-chrome-stable
+        state: present
+
+    - file:
+        path: /home/$user/code/svn
+        owner: $user
+        state: directory
+        mode: 0755
